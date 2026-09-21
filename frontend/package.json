@@ -5,7 +5,8 @@
   "description": "Campus Connect - Enterprise College ERP & Management System Frontend",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "node build.js",
+    "build:vite": "vite build",
     "preview": "vite preview"
   },
   "devDependencies": {

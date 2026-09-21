@@ -20,7 +20,9 @@ function api(path, options) {
     if (options.body && typeof options.body !== "string") options.body = JSON.stringify(options.body);
   }
   options.headers = headers;
-  return fetch(path, options).then(function (res) {
+  var apiBase = window.CAMPUS_API_BASE || localStorage.getItem("campus_api_base") || "";
+  var targetUrl = (path.startsWith("http://") || path.startsWith("https://")) ? path : (apiBase + path);
+  return fetch(targetUrl, options).then(function (res) {
     return res.json().catch(function () { return {}; }).then(function (data) {
       if (!res.ok) {
         var err = new Error(data.error || ("Request failed (" + res.status + ")"));
@@ -1599,8 +1601,13 @@ function initMaterials(role) {
           ? '<span class="badge badge-secondary">All Divisions</span>'
           : '<span class="badge badge-info">Div ' + escapeHtml(m.division) + '</span>';
 
-        var downloadBtn = m.downloadUrl
-          ? '<a class="btn btn-secondary btn-sm" href="' + escapeHtml(m.downloadUrl) + '" target="_blank" download>📥 Download</a>'
+        var downloadUrl = m.downloadUrl;
+        if (downloadUrl && !downloadUrl.startsWith("http")) {
+          var base = window.CAMPUS_API_BASE || localStorage.getItem("campus_api_base") || "";
+          downloadUrl = base + downloadUrl;
+        }
+        var downloadBtn = downloadUrl
+          ? '<a class="btn btn-secondary btn-sm" href="' + escapeHtml(downloadUrl) + '" target="_blank" download>📥 Download</a>'
           : '<span style="color:var(--text-muted)">Unavailable</span>';
 
         var deleteBtn = (role === "admin" || role === "faculty")

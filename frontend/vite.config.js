@@ -1,8 +1,34 @@
-import { resolve } from "path";
+import fs from "fs";
+import path, { resolve } from "path";
 import { defineConfig } from "vite";
+
+function copyStaticAssets() {
+  return {
+    name: "copy-static-assets",
+    closeBundle() {
+      const copyDir = (src, dest) => {
+        if (!fs.existsSync(src)) return;
+        fs.mkdirSync(dest, { recursive: true });
+        for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+          const srcPath = path.join(src, entry.name);
+          const destPath = path.join(dest, entry.name);
+          if (entry.isDirectory()) {
+            copyDir(srcPath, destPath);
+          } else {
+            fs.copyFileSync(srcPath, destPath);
+          }
+        }
+      };
+      copyDir(resolve(__dirname, "js"), resolve(__dirname, "dist/js"));
+      copyDir(resolve(__dirname, "images"), resolve(__dirname, "dist/images"));
+      copyDir(resolve(__dirname, "css"), resolve(__dirname, "dist/css"));
+    },
+  };
+}
 
 export default defineConfig({
   root: "./",
+  plugins: [copyStaticAssets()],
   server: {
     port: 3000,
     proxy: {
@@ -14,6 +40,8 @@ export default defineConfig({
   },
   build: {
     outDir: "dist",
+    emptyOutDir: true,
+    reportCompressedSize: false,
     rollupOptions: {
       input: {
         main: resolve(__dirname, "index.html"),

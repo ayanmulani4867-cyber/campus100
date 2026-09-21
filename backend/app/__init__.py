@@ -48,9 +48,12 @@ def create_app(config_name=None):
     register_error_handlers(app)
     register_blueprints(app)
 
-    if app.config.get("CORS_ORIGINS"):
-        from flask_cors import CORS
-        CORS(app, supports_credentials=True, origins=app.config["CORS_ORIGINS"])
+    from flask_cors import CORS
+    cors_origins = app.config.get("CORS_ORIGINS")
+    if cors_origins:
+        CORS(app, supports_credentials=True, origins=cors_origins, allow_headers=["Content-Type", "X-Session-Token", "Authorization"])
+    else:
+        CORS(app, supports_credentials=True, origins=r".*", allow_headers=["Content-Type", "X-Session-Token", "Authorization"])
 
     @app.get("/api/health")
     def health():

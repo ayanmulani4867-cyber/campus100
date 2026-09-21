@@ -1,10 +1,11 @@
 services:
   - type: web
-    name: campus-connect
-    runtime: python
+    name: campus-connect-api
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: Dockerfile
+    dockerContext: .
     plan: free
-    buildCommand: "pip install -r backend/requirements.txt"
-    startCommand: "gunicorn --chdir backend run:app"
     envVars:
       - key: FLASK_ENV
         value: production
@@ -14,10 +15,20 @@ services:
         fromDatabase:
           name: campus-connect-db
           property: connectionString
-      - key: FRONTEND_DIR
-        value: "../frontend"
+      - key: CORS_ORIGINS
+        sync: false
       - key: MATERIAL_UPLOAD_DIR
-        value: "../uploads/materials"
+        value: "/app/uploads/materials"
+
+  - type: static
+    name: campus-connect-frontend
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://campus-connect-api.onrender.com/api/*
 
 databases:
   - name: campus-connect-db
