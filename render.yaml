@@ -1,10 +1,11 @@
 services:
+  # ── Backend API (Docker) ──────────────────────────────────────────────
   - type: web
     name: campus-connect-api
     runtime: docker
     rootDir: backend
-    dockerfilePath: Dockerfile
-    dockerContext: .
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
     plan: free
     envVars:
       - key: FLASK_ENV
@@ -20,11 +21,14 @@ services:
       - key: MATERIAL_UPLOAD_DIR
         value: "/app/uploads/materials"
 
-  - type: static
+  # ── Frontend Static Site ──────────────────────────────────────────────
+  - type: web
     name: campus-connect-frontend
+    runtime: static
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist
+    plan: free
     routes:
       - type: rewrite
         source: /api/*
